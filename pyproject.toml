@@ -1,0 +1,18 @@
+[project]
+name = "celeste-video-generation"
+version = "0.1.0"
+description = "Unified video generation clients across providers"
+requires-python = ">=3.13"
+dependencies = [
+    "celeste-core>=0.1.0",
+    "replicate>=0.30.0",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+    "streamlit>=1.46.0",
+]
+
+[tool.uv.sources]
+celeste-core = { workspace = true }
