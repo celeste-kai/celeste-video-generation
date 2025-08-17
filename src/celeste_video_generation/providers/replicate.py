@@ -3,12 +3,12 @@ from typing import Any
 
 import replicate
 from celeste_core import AIResponse, Provider, VideoArtifact
-from celeste_core.base.client import BaseClient
+from celeste_core.base.video_client import BaseVideoClient
 from celeste_core.config.settings import settings
 from celeste_core.enums.capability import Capability
 
 
-class ReplicateVideoClient(BaseClient):
+class ReplicateVideoClient(BaseVideoClient):
     def __init__(self, model: str, **kwargs: Any) -> None:
         super().__init__(
             model=model,
@@ -23,33 +23,19 @@ class ReplicateVideoClient(BaseClient):
     ) -> AIResponse[list[VideoArtifact]]:
         # See: https://replicate.com/bytedance/seedance-1-lite/api
         inputs = {"prompt": prompt, **kwargs}
-        # client.run is synchronous; offload to a thread
+        # Request plain URL strings from Replicate to avoid FileOutput objects
         outputs = await asyncio.to_thread(
-            self.client.run, self.model_name, input=inputs
+            self.client.run, self.model_name, input=inputs, use_file_output=False
         )
-        artifacts: list[VideoArtifact] = []
-        # Replicate returns file-like or URLs; normalize to VideoArtifact
+
+        # Normalize to a list of HTTP URLs with minimal branching
+        urls: list[str] = []
         if isinstance(outputs, list):
-            for out in outputs:
-                url = None
-                if hasattr(out, "url"):
-                    try:
-                        url = out.url()  # type: ignore[call-arg]
-                    except Exception:
-                        url = None
-                if isinstance(out, str) and out.startswith("http"):
-                    url = out
-                artifacts.append(VideoArtifact(url=url))
-        else:
-            url = None
-            if hasattr(outputs, "url"):
-                try:
-                    url = outputs.url()  # type: ignore[call-arg]
-                except Exception:
-                    url = None
-            if isinstance(outputs, str) and outputs.startswith("http"):
-                url = outputs
-            artifacts.append(VideoArtifact(url=url))
+            urls = [u for u in outputs if isinstance(u, str) and u.startswith("http")]
+        elif isinstance(outputs, str) and outputs.startswith("http"):
+            urls = [outputs]
+
+        artifacts: list[VideoArtifact] = [VideoArtifact(url=u) for u in urls]
 
         return AIResponse(
             content=artifacts,
