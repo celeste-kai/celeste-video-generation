@@ -1,35 +1,24 @@
 """Celeste Video Generation unified interface."""
 
+from importlib import import_module
 from typing import Any, Union
 
 from celeste_core import Provider
 from celeste_core.base.client import BaseClient
 from celeste_core.config.settings import settings
 
-SUPPORTED_PROVIDERS: set[Provider] = {
-    Provider.REPLICATE,
-}
+from .mapping import PROVIDER_MAPPING
 
 
 def create_video_client(provider: Union[Provider, str], **kwargs: Any) -> BaseClient:
-    if isinstance(provider, str):
-        provider = Provider(provider)
+    prov = Provider(provider) if isinstance(provider, str) else provider
+    if prov not in PROVIDER_MAPPING:
+        raise ValueError(f"Provider '{prov.value}' is not wired for video generation.")
 
-    if provider not in SUPPORTED_PROVIDERS:
-        supported = [p.value for p in SUPPORTED_PROVIDERS]
-        raise ValueError(
-            f"Unsupported provider: {provider.value}. Supported: {supported}"
-        )
-
-    settings.validate_for_provider(provider.value)
-
-    provider_mapping = {
-        Provider.REPLICATE: (".providers.replicate", "ReplicateVideoClient"),
-    }
-    module_path, class_name = provider_mapping[provider]
-    module = __import__(f"celeste_video_generation{module_path}", fromlist=[class_name])
-    client_class = getattr(module, class_name)
-    return client_class(**kwargs)
+    settings.validate_for_provider(prov.value)
+    module_path, class_name = PROVIDER_MAPPING[prov]
+    module = import_module(f"celeste_video_generation{module_path}")
+    return getattr(module, class_name)(**kwargs)
 
 
 __all__ = [
