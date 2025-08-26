@@ -25,7 +25,7 @@ class ReplicateVideoClient(BaseVideoClient):
         inputs = {"prompt": prompt, **kwargs}
         # Request plain URL strings from Replicate to avoid FileOutput objects
         outputs = await asyncio.to_thread(
-            self.client.run, self.model_name, input=inputs, use_file_output=False
+            self.client.run, self.model, input=inputs, use_file_output=False
         )
 
         # Normalize to a list of HTTP URLs with minimal branching
@@ -40,5 +40,5 @@ class ReplicateVideoClient(BaseVideoClient):
         return AIResponse(
             content=artifacts,
             provider=Provider.REPLICATE,
-            metadata={"model": self.model_name},
+            metadata={"model": self.model},
         )
