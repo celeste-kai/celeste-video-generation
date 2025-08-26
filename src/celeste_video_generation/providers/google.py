@@ -23,7 +23,7 @@ class GoogleVideoClient(BaseVideoClient):
     ) -> AIResponse[list[VideoArtifact]]:
         # Start video generation
         operation = await self.client.aio.models.generate_videos(
-            model=self.model_name,
+            model=self.model,
             prompt=prompt,
         )
 
@@ -41,5 +41,5 @@ class GoogleVideoClient(BaseVideoClient):
         return AIResponse(
             content=artifacts,
             provider=Provider.GOOGLE,
-            metadata={"model": self.model_name},
+            metadata={"model": self.model},
         )
