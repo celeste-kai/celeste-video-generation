@@ -1,4 +1,5 @@
 import asyncio
+import tempfile
 from typing import Any
 
 from celeste_core import AIResponse, Provider, VideoArtifact
@@ -28,8 +29,6 @@ class GoogleVideoClient(BaseVideoClient):
             return types.Image.from_file(location=image.path)
         elif image.data:
             # For byte data, save to temp file and use from_file
-            import tempfile
-
             # Detect file extension from image data
             ext = ".jpg"  # default
             if image.data.startswith(b"\x89PNG"):
