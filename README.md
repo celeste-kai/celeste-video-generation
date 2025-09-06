@@ -46,11 +46,7 @@ async def main():
 
     # Generate video
     prompt = "A serene landscape with a waterfall at sunset, cinematic"
-    response = await client.generate_content(
-        prompt,
-        duration=5,
-        resolution="480p"
-    )
+    response = await client.generate_content(prompt)
 
     # Access video artifacts
     for video in response.content:
@@ -111,7 +107,7 @@ GOOGLE_API_KEY=your_google_key
 
 ### Replicate
 - **Models**: `bytedance/seedance-1-lite`, custom models
-- **Features**: Duration control, resolution settings
+- **Features**: Text and image-to-video generation
 - **Output**: Video URLs, optional raw bytes
 
 ## 💻 Usage Examples
@@ -123,9 +119,7 @@ from celeste_video_generation.providers.replicate import ReplicateVideoClient
 
 client = ReplicateVideoClient(model="bytedance/seedance-1-lite")
 response = await client.generate_content(
-    "A robot dancing in a futuristic city",
-    duration=5,
-    resolution="720p"
+    "A robot dancing in a futuristic city"
 )
 ```
 
@@ -133,8 +127,7 @@ response = await client.generate_content(
 
 ```python
 async for chunk in client.stream_generate_content(
-    "Ocean waves crashing on a beach",
-    duration=10
+    "Ocean waves crashing on a beach"
 ):
     print(f"Generation progress: {chunk.content}")
 ```
@@ -144,8 +137,6 @@ async for chunk in client.stream_generate_content(
 ```python
 response = await client.generate_content(
     prompt="Abstract art in motion",
-    duration=8,
-    resolution="1080p",
     fps=30,
     aspect_ratio="16:9"
 )
