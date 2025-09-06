@@ -18,15 +18,11 @@ class ReplicateVideoClient(BaseVideoClient):
         )
         self.client = replicate.Client(api_token=settings.replicate.api_token)
 
-    async def generate_content(
-        self, prompt: str, **kwargs: Any
-    ) -> AIResponse[list[VideoArtifact]]:
+    async def generate_content(self, prompt: str, **kwargs: Any) -> AIResponse[list[VideoArtifact]]:
         # See: https://replicate.com/bytedance/seedance-1-lite/api
         inputs = {"prompt": prompt, **kwargs}
         # Request plain URL strings from Replicate to avoid FileOutput objects
-        outputs = await asyncio.to_thread(
-            self.client.run, self.model, input=inputs, use_file_output=False
-        )
+        outputs = await asyncio.to_thread(self.client.run, self.model, input=inputs, use_file_output=False)
 
         # Normalize to a list of HTTP URLs with minimal branching
         urls: list[str] = []
