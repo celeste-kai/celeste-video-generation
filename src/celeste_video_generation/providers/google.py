@@ -47,13 +47,20 @@ class GoogleVideoClient(BaseVideoClient):
         self,
         prompt: str,
         image: ImageArtifact | None = None,
-        **kwargs: Any,  # noqa: ARG002
+        **kwargs: Any,
     ) -> AIResponse[list[VideoArtifact]]:
+        # Build optional video generation config
+        config_params: dict[str, Any] = dict(kwargs)
+        if "duration" in config_params:
+            config_params["duration_seconds"] = config_params.pop("duration")
+        config = types.GenerateVideosConfig(**config_params) if config_params else None
+
         # Start video generation
         operation = await self.client.aio.models.generate_videos(
             model=self.model,
             prompt=prompt,
             image=self._prepare_image(image),
+            config=config,
         )
 
         # Poll the operation status until the video is ready
